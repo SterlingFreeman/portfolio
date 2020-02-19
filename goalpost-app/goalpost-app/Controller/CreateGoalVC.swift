@@ -8,16 +8,22 @@
 
 import UIKit
 
-class CreateGoalVC: UIViewController {
+class CreateGoalVC: UIViewController, UITextViewDelegate {
     @IBOutlet weak var goalTextView: UITextView!
     @IBOutlet weak var shortTermBtn: UIButton!
     @IBOutlet weak var longTermBtn: UIButton!
     @IBOutlet weak var nextBtn: UIButton!
     
     var goalType: GoalType = GoalType.shortTerm
+    var placeholder: String = "What is your goal?"
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        goalTextView.delegate = self
+        goalTextView.text = placeholder
+        goalTextView.textColor = UIColor.lightGray
+        
 //        goalTextView.inputAccessoryView = nextBtn
         nextBtn.bindToKeyboard()//Custom ext func created to mimick .inputAccessoryView
         shortTermBtn.setSelectedColor()
@@ -25,6 +31,13 @@ class CreateGoalVC: UIViewController {
     }
     
     @IBAction func nextBtnWasPressed(_ sender: Any) {
+        if goalTextView.text != "" && goalTextView.text != placeholder{
+            guard let finishVC = storyboard?.instantiateViewController(identifier: "FinishGoalVC") as? FinishGoalVC else {
+                return
+            }
+            finishVC.initData(goalDescription: goalTextView.text, goalType: goalType)
+            presentDetail(finishVC)
+        }
     }
     
     @IBAction func shortTermBtnWasPressed(_ sender: Any) {
@@ -42,4 +55,19 @@ class CreateGoalVC: UIViewController {
     @IBAction func backBtnWasPressed(_ sender: Any) {
         dismissDetail()
     }
+    
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        if goalTextView.textColor == UIColor.lightGray {
+            goalTextView.text = nil
+            goalTextView.textColor = UIColor.black
+        }
+    }
+    
+    func textViewDidEndEditing(_ textView: UITextView) {
+        if goalTextView.text == ""{
+            goalTextView.text = placeholder
+            goalTextView.textColor = UIColor.lightGray
+        }
+    }
+    
 }
