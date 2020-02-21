@@ -21,14 +21,52 @@ extension UIViewController {
         present(viewControllerToPresent, animated: false, completion: nil)
     }
     
+    func presentSecondaryDetail(_ viewControllerToPresent: UIViewController){
+        viewControllerToPresent.modalPresentationStyle = .fullScreen
+        let transition = CATransition()
+        transition.duration = 0.3
+        transition.type = CATransitionType.push
+        transition.subtype = CATransitionSubtype.fromRight
+        
+        guard let presentingViewController = self.presentingViewController else{
+            return
+        }
+        
+        dismiss(animated: false) {
+            presentingViewController.view.window?.layer.add(transition, forKey: kCATransition)
+            presentingViewController.present(viewControllerToPresent, animated: false, completion: nil)
+        }
+    }
+    
     func dismissDetail () {
+        self.modalPresentationStyle = .fullScreen
         let transition = CATransition()
         transition.duration = 0.3
         transition.type = .push
         transition.subtype = .fromLeft
         self.view.window?.layer.add(transition, forKey: kCATransition)
-        self.modalPresentationStyle = .fullScreen
+        
         
         dismiss(animated: false, completion: nil)
     }
+    
+    func dismissDetail(viewControllerToDismissTo: UIViewController){
+        viewControllerToDismissTo.modalPresentationStyle = .fullScreen
+        
+        let transition = CATransition()
+        transition.type = .push
+        transition.subtype = .fromLeft
+        transition.duration = 0.3
+        
+        guard let presentingViewController = self.presentingViewController else{
+            return
+        }
+        
+        dismiss(animated: false) {
+            presentingViewController.view.window?.layer.add(transition, forKey: kCATransition)
+            presentingViewController.present(viewControllerToDismissTo, animated: false, completion: nil)
+        }
+    }
 }
+
+

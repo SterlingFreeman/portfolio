@@ -7,6 +7,10 @@
 //
 
 import UIKit
+import CoreData
+
+let appDelegate = UIApplication.shared.delegate as? AppDelegate
+var goals: [Goal] = []
 
 class GoalsVC: UIViewController {
     @IBOutlet weak var tableView: UITableView!
@@ -19,6 +23,12 @@ class GoalsVC: UIViewController {
         tableView.isHidden = false
         
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        fetchCoreDataObjects()
+        tableView.reloadData()
+    }
 
     @IBAction func addGoalBtnWasPressed(_ sender: Any) {
         guard let createGoalVC = storyboard?.instantiateViewController(withIdentifier: "CreateGoalVC") else {
@@ -30,23 +40,118 @@ class GoalsVC: UIViewController {
 }
 
 
+//TableView extension
 extension GoalsVC: UITableViewDelegate, UITableViewDataSource{
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 3
+        return goals.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "goalCell") as? GoalCell else{
             return UITableViewCell()
         }
-        cell.updateCellView(description: "Eat salad and do some other stuff and more and even more.", type: GoalType.shortTerm, goalProgressAmount: 125)
+        let goal = goals[indexPath.row]
+        cell.updateCellView(goal: goal)
         return cell
     }
     
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
     
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
+        return .none
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        
+        let deleteAction = UIContextualAction(style: .destructive, title: "DELETE") { (rowAction, view, handler) in
+            self.removeGoal(atIndexPath: indexPath)
+            self.fetchCoreDataObjects()
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+        }
+        
+        let addAction = UIContextualAction(style: .normal, title: "ADD 1") { (rowAction, view, handler) in
+            self.set(goalProgressAtIndexPath: indexPath)
+            tableView.reloadRows(at: [indexPath], with: .none)
+        }
+        
+        deleteAction.backgroundColor = .red
+        addAction.backgroundColor = #colorLiteral(red: 0.9176470588, green: 0.662745098, blue: 0.2666666667, alpha: 1)
+        
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction, addAction])
+        configuration.performsFirstActionWithFullSwipe = true
+        return configuration
+    }
+}
+
+//CoreData extension
+extension GoalsVC {
+    
+    func set(goalProgressAtIndexPath index: IndexPath){
+        guard let managedContext = appDelegate?.persistentContainer.viewContext else {
+            return
+        }
+        let goal: Goal = goals[index.row]
+        
+        if goal.goalProgress < goal.goalCompletionValue {
+            goal.goalProgress += 1
+        }else{
+            return
+        }
+        
+        do{
+            try managedContext.save()
+            print("Successfully set goal progress")
+        }catch{
+            debugPrint("Could not set goal progess: \(error)")
+        }
+    }
+    
+    func removeGoal(atIndexPath indexPath: IndexPath){
+        guard let managedContext = appDelegate?.persistentContainer.viewContext else {
+            return
+        }
+        
+        managedContext.delete(goals[indexPath.row])
+        
+        do {
+            try managedContext.save()
+            print("Successfully deleted goal")
+        } catch{
+            debugPrint("Could not delete goal: \(error)")
+        }
+    }
+    func fetchCoreDataObjects(){
+        self.fetch { (complete) in
+            if complete {
+                if goals.count >= 1{
+                    tableView.isHidden = false
+                } else {
+                    tableView.isHidden = true
+                }
+            }
+        }
+    }
+    func fetch(completion: (_ complete: Bool) -> ()){//To fetch existing goals from CoreData
+        guard let managedContext = appDelegate?.persistentContainer.viewContext else{
+            return
+        }
+        
+        let fetchRequest = NSFetchRequest<Goal>(entityName: "Goal")
+        
+        do {
+            goals = try managedContext.fetch(fetchRequest)
+            print("Succesfully fetched data")
+            completion(true)
+        } catch  {
+            debugPrint("Could not fetch: \(error)")
+            completion(true)
+        }
+    }
 }
 

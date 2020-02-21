@@ -12,22 +12,20 @@ class GoalCell: UITableViewCell {
     @IBOutlet weak var goalDescriptionLbl: UILabel!
     @IBOutlet weak var typeDescriptionLbl: UILabel!
     @IBOutlet weak var goalProgressLbl: UILabel!
-
-//    override func awakeFromNib() {
-//        super.awakeFromNib()
-//        // Initialization code
-//    }
-//
-//    override func setSelected(_ selected: Bool, animated: Bool) {
-//        super.setSelected(selected, animated: animated)
-//
-//        // Configure the view for the selected state
-//    }
+    @IBOutlet weak var completionView: UIView!
     
-    func updateCellView(description: String, type: GoalType, goalProgressAmount: Int){
-        self.goalDescriptionLbl.text = description
-        self.typeDescriptionLbl.text = type.rawValue
-        self.goalProgressLbl.text = String(describing: goalProgressAmount)
+
+    
+    func updateCellView(goal: Goal){
+        self.goalDescriptionLbl.text = goal.goalDescription
+        self.typeDescriptionLbl.text = goal.goalType
+        self.goalProgressLbl.text = String(describing: goal.goalProgress)
+        
+        if goal.goalProgress == goal.goalCompletionValue {
+            self.completionView.isHidden = false
+        } else {
+            self.completionView.isHidden = true
+        }
     }
 
 }
