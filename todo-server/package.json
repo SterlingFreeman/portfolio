@@ -1,0 +1,23 @@
+{
+  "name": "my-todo-server",
+  "version": "1.0.0",
+  "description": "Simple HTTP Server For Todo-app ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SterlingFreeman/portfolio.git"
+  },
+  "author": "Sterling Freeman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SterlingFreeman/portfolio/issues"
+  },
+  "homepage": "https://github.com/SterlingFreeman/portfolio#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1"
+  }
+}
